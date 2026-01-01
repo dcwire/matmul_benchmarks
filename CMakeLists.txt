@@ -9,6 +9,7 @@ check_language(CUDA)
 
 set(SOURCES
     src/main.cpp
+    src/naive_cpu.cpp
 )
 
 if(CMAKE_CUDA_COMPILER)
