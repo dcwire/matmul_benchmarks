@@ -17,9 +17,8 @@ __global__ void naive_matmul(float *A, float *B, float *C, int N) {
 
 // TODO: Add error checking
 void launch_naive_matmul(float *A, float *B, float *C, int N) {
-    int threads = 64;
-    dim3 gridDim((N + threads - 1)/threads, (N + threads - 1)/threads);
-    dim3 blockDim(threads, threads);
+    dim3 gridDim((N + THREADS - 1)/THREADS, (N + THREADS - 1)/THREADS);
+    dim3 blockDim(THREADS, THREADS);
 
     naive_matmul<<<gridDim, blockDim>>>(A, B, C, N);
 

@@ -57,7 +57,7 @@ void print_matrix_tile(std::vector<float>& A, std::vector<float>& B, std::vector
 }
 
 int main() {
-  int N = 1024; // Can move this outside the file. Maybe pass matrix size through the CLI?
+  int N = 16384; // Can move this outside the file. Maybe pass matrix size through the CLI?
   int LIMIT = 4; // Print the first LIMITxLIMIT tile of the matrices 
   size_t bytes = N * N * sizeof(float);
 
@@ -72,7 +72,7 @@ int main() {
   
   auto cpu_start = std::chrono::high_resolution_clock::now();
 
-  cpu_matmul(h_A, h_B, h_C, N);
+  // cpu_matmul(h_A, h_B, h_C, N);
   
   auto cpu_end = std::chrono::high_resolution_clock::now();
   std::chrono::duration<float, std::milli> cpu_duration = cpu_end - cpu_start;
@@ -95,15 +95,16 @@ int main() {
   cudaEventCreate(&start); cudaEventCreate(&stop);
   float milliseconds = 0;
 
-  // Warmup
-  for (int i=0; i<4; i++) {
-    launch_naive_matmul(d_A.data, d_B.data, d_C.data, N);
-  }
-
   // ===================================================
   // 2. NAIVE GPU BENCHMARK
   // ===================================================
   
+  // Warmup
+  for (int i=0; i<4; i++) {
+    launch_naive_matmul(d_A.data, d_B.data, d_C.data, N);
+  }
+  cudaDeviceSynchronize();
+
   // Run the benchmark
   cudaEventRecord(start);
   launch_naive_matmul(d_A.data, d_B.data, d_C.data, N);
@@ -112,17 +113,51 @@ int main() {
   cudaEventElapsedTime(&milliseconds, start, stop);
   std::cout << "2. Naive GPU time: " << milliseconds << " ms\n"; 
 
+  cudaError_t err = cudaGetLastError();
+  if (err != cudaSuccess) {
+      printf("Kernel Launch Error: %s\n", cudaGetErrorString(err));
+  }
+  
+  cudaDeviceSynchronize();
+  
   // ===================================================
   // 3. TILED MATMUL BENCHMARK
   // ===================================================
   
+  // Warmup
+  for (int i=0; i<4; i++) {
+    launch_tiled_matmul(d_A.data, d_B.data, d_C.data, N);
+  }
+  cudaDeviceSynchronize();
+
   // Run the benchmark
   cudaEventRecord(start);
-  launch_naive_matmul(d_A.data, d_B.data, d_C.data, N);
+  launch_tiled_matmul(d_A.data, d_B.data, d_C.data, N);
   cudaEventRecord(stop);
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&milliseconds, start, stop);
   std::cout << "3. Tiled Matmul GPU time: " << milliseconds << " ms\n";
+
+  cudaDeviceSynchronize();
+  
+  // ===================================================
+  // 4. COARSED THREADS BENCHMARK
+  // ===================================================
+  
+
+  // Warmup
+  for (int i=0; i<4; i++) {
+    launch_threadcoa_matmul(d_A.data, d_B.data, d_C.data, N);
+  }
+  cudaDeviceSynchronize();
+
+  // Run the benchmark
+  cudaEventRecord(start);
+  launch_threadcoa_matmul(d_A.data, d_B.data, d_C.data, N);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  std::cout << "4. Coarsed threads GPU time: " << milliseconds << " ms\n";
 #else
   std::cout << "No cuda found... skipping GPU benchmarks...\n";
 #endif

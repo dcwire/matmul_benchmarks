@@ -46,8 +46,8 @@ __global__ void tiled_matmul(float *A, float *B, float *C, int N) {
 }
 
 void launch_tiled_matmul(float *A, float *B, float *C, int N) {
-    dim3 gridDim((N + THREADS - 1)/THREADS, (N + THREADS - 1)/THREADS);
-    dim3 blockDim(THREADS, THREADS);
+    dim3 gridDim((N + TILE_WIDTH - 1)/TILE_WIDTH, (N + TILE_WIDTH - 1)/TILE_WIDTH);
+    dim3 blockDim(TILE_WIDTH, TILE_WIDTH);
 
     tiled_matmul<<<gridDim, blockDim>>>(A, B, C, N);
 }
