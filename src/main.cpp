@@ -111,6 +111,18 @@ int main() {
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&milliseconds, start, stop);
   std::cout << "2. Naive GPU time: " << milliseconds << " ms\n"; 
+
+  // ===================================================
+  // 3. TILED MATMUL BENCHMARK
+  // ===================================================
+  
+  // Run the benchmark
+  cudaEventRecord(start);
+  launch_naive_matmul(d_A.data, d_B.data, d_C.data, N);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  std::cout << "3. Tiled Matmul GPU time: " << milliseconds << " ms\n";
 #else
   std::cout << "No cuda found... skipping GPU benchmarks...\n";
 #endif

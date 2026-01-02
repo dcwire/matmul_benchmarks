@@ -19,7 +19,7 @@ if(CMAKE_CUDA_COMPILER)
 
   include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
 
-  list(APPEND SOURCES src/naive_gpu.cu)
+  list(APPEND SOURCES src/naive_gpu.cu src/tiled_matmul.cu)
   add_compile_definitions(HAS_CUDA=1)
 else()
   add_compile_definitions(HAS_CUDA=0)
