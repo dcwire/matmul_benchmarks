@@ -4,6 +4,10 @@
 #include <string>
 #include "naive_cpu.hpp"
 
+#if defined(HAS_CUDA) && HAS_CUDA
+#include "kernels.cuh"
+#include "device_matrix.cuh"
+#endif
 
 void fill_random(std::vector<float>& v) {
   for(auto& i: v) i = static_cast<float>(rand()) / RAND_MAX;
@@ -53,7 +57,7 @@ void print_matrix_tile(std::vector<float>& A, std::vector<float>& B, std::vector
 }
 
 int main() {
-  int N = 4; // Can move this outside the file. Maybe pass matrix size through the CLI?
+  int N = 1024; // Can move this outside the file. Maybe pass matrix size through the CLI?
   int LIMIT = 4; // Print the first LIMITxLIMIT tile of the matrices 
   size_t bytes = N * N * sizeof(float);
 
@@ -74,9 +78,41 @@ int main() {
   std::chrono::duration<float, std::milli> cpu_duration = cpu_end - cpu_start;
   float cpu_ms = cpu_duration.count();
 
-  std::cout << "Naive CPU time: " << cpu_ms << " ms\n";
+  std::cout << "1. Naive CPU time: " << cpu_ms << " ms\n";
   print_matrix_tile(h_A, h_B, h_C, LIMIT, N);
-  
 
+#if HAS_CUDA
+  // ===================================================
+  // INITIALIZE GPU DATA
+  // ===================================================
+  
+  DeviceMatrix<float> d_A(N, N), d_B(N, N), d_C(N, N);
+  
+  d_A.copy_from_host(h_A, bytes);
+  d_B.copy_from_host(h_B, bytes);
+
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start); cudaEventCreate(&stop);
+  float milliseconds = 0;
+
+  // Warmup
+  for (int i=0; i<4; i++) {
+    launch_naive_matmul(d_A.data, d_B.data, d_C.data, N);
+  }
+
+  // ===================================================
+  // 2. NAIVE GPU BENCHMARK
+  // ===================================================
+  
+  // Run the benchmark
+  cudaEventRecord(start);
+  launch_naive_matmul(d_A.data, d_B.data, d_C.data, N);
+  cudaEventRecord(stop);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  std::cout << "2. Naive GPU time: " << milliseconds << " ms\n"; 
+#else
+  std::cout << "No cuda found... skipping GPU benchmarks...\n";
+#endif
   return 0;
 }

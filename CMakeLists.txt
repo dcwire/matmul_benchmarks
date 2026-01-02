@@ -16,7 +16,10 @@ if(CMAKE_CUDA_COMPILER)
   enable_language(CUDA)
   set(CMAKE_CUDA_STANDARD 17)
   set(CMAKE_CUDA_ARCHITECTURES native)
-  # list(APPEND SOURCES src/)
+
+  include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+
+  list(APPEND SOURCES src/naive_gpu.cu)
   add_compile_definitions(HAS_CUDA=1)
 else()
   add_compile_definitions(HAS_CUDA=0)
@@ -25,3 +28,6 @@ endif()
 # Adds an executable called benchmark
 add_executable(benchmark ${SOURCES})
 
+if(CMAKE_CUDA_COMPILER)
+  target_link_libraries(benchmark cudart)
+endif()

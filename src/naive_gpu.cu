@@ -1,4 +1,4 @@
-#include<cuda_runtime.h>
+#include <cuda_runtime.h>
 #include "kernels.cuh"
 
 
@@ -15,6 +15,12 @@ __global__ void naive_matmul(float *A, float *B, float *C, int N) {
     }
 }
 
+// TODO: Add error checking
 void launch_naive_matmul(float *A, float *B, float *C, int N) {
-    // 
+    int threads = 64;
+    dim3 gridDim((N + threads - 1)/threads, (N + threads - 1)/threads);
+    dim3 blockDim(threads, threads);
+
+    naive_matmul<<<gridDim, blockDim>>>(A, B, C, N);
+
 }
