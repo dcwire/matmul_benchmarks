@@ -57,7 +57,7 @@ void print_matrix_tile(std::vector<float>& A, std::vector<float>& B, std::vector
 }
 
 int main() {
-  int N = 16384; // Can move this outside the file. Maybe pass matrix size through the CLI?
+  int N = 1024; // Can move this outside the file. Maybe pass matrix size through the CLI?
   int LIMIT = 4; // Print the first LIMITxLIMIT tile of the matrices 
   size_t bytes = N * N * sizeof(float);
 
@@ -112,11 +112,6 @@ int main() {
   cudaEventSynchronize(stop);
   cudaEventElapsedTime(&milliseconds, start, stop);
   std::cout << "2. Naive GPU time: " << milliseconds << " ms\n"; 
-
-  cudaError_t err = cudaGetLastError();
-  if (err != cudaSuccess) {
-      printf("Kernel Launch Error: %s\n", cudaGetErrorString(err));
-  }
   
   cudaDeviceSynchronize();
   

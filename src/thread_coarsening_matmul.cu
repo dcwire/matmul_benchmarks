@@ -1,4 +1,5 @@
 #include <cuda_runtime.h>
+#include <iostream>
 #include "kernels.cuh"
 
 
@@ -59,6 +60,10 @@ __global__ void threadcoa_matmul(float *A, float *B, float *C, int N) {
 }
 
 void launch_threadcoa_matmul(float *A, float *B, float *C, int N) {
+    if ((TILE_WIDTH * TILE_WIDTH) > 1024) {
+        printf("Error: Invalid thread number. Aborting...\n");
+        return;
+    }
     dim3 blockDim(TILE_WIDTH, TILE_WIDTH);
     int COL_BLOCKS = TILE_WIDTH * COARSE_FACTOR;
     // x, y -> x is used for columns

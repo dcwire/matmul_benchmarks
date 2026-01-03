@@ -1,7 +1,7 @@
 #pragma once
 
-#define THREADS 128
-#define TILE_WIDTH 64
+#define THREADS 32
+#define TILE_WIDTH 32
 #define COARSE_FACTOR 8
 
 // Naive matrix multiplication without any optimizations

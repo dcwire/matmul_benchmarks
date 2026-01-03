@@ -1,4 +1,5 @@
 #include <cuda_runtime.h>
+#include <iostream>
 #include "kernels.cuh"
 
 
@@ -46,6 +47,10 @@ __global__ void tiled_matmul(float *A, float *B, float *C, int N) {
 }
 
 void launch_tiled_matmul(float *A, float *B, float *C, int N) {
+    if ((TILE_WIDTH * TILE_WIDTH) > 1024) {
+        printf("Error: Invalid thread number. Aborting...\n");
+        return;
+    }
     dim3 gridDim((N + TILE_WIDTH - 1)/TILE_WIDTH, (N + TILE_WIDTH - 1)/TILE_WIDTH);
     dim3 blockDim(TILE_WIDTH, TILE_WIDTH);
 

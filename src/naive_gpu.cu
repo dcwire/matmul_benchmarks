@@ -1,4 +1,5 @@
 #include <cuda_runtime.h>
+#include <iostream>
 #include "kernels.cuh"
 
 
@@ -17,6 +18,10 @@ __global__ void naive_matmul(float *A, float *B, float *C, int N) {
 
 // TODO: Add error checking
 void launch_naive_matmul(float *A, float *B, float *C, int N) {
+    if ((THREADS * THREADS) > 1024) {
+        printf("Error: Invalid thread number. Aborting...\n");
+        return;
+    }
     dim3 gridDim((N + THREADS - 1)/THREADS, (N + THREADS - 1)/THREADS);
     dim3 blockDim(THREADS, THREADS);
 
